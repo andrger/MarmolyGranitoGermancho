@@ -4,28 +4,28 @@ const categories = [
         title: 'Pisos',
         description: 'Elegancia y durabilidad en cada paso. Nuestros acabados en granito y mármol transforman cualquier espacio.',
         folder: 'assets/src/images/pisos',
-        files: ['piso.jpeg', 'piso.jpg', 'piso.mp4', 'pulido.mp4', 'video.mp4']
+        files: ['PISO (2).jpeg', 'PISO (2).mp4', 'piso.jpeg', 'piso.jpg', 'piso.mp4', 'PISO2.mp4', 'PISO3.mp4', 'PISO4.mp4', 'PISO5.mp4', 'pulido.mp4', 'video.mp4']
     },
     {
         id: 'gradas',
         title: 'Gradas y Escaleras',
         description: 'Diseños robustos y estéticos para conectar tus espacios con la mejor calidad en piedra natural y cemento.',
         folder: 'assets/src/images/gradas_y_escaleras',
-        files: ['escalera.jpeg', 'escaleras.jpg', 'escaleras.mp4', 'escaleras1.jpg', 'escaleras2.jpg', 'escaleras3.jpg', 'escaleras5.jpg', 'gradas.jpg']
+        files: ['ESCALERA (2).jpeg', 'escalera.jpeg', 'ESCALERA2.jpeg', 'ESCALERA3.mp4', 'ESCALERAS.jpeg', 'escaleras.jpg', 'escaleras.mp4', 'escaleras1.jpg', 'escaleras2.jpg', 'escaleras3.jpg', 'escaleras5.jpg', 'GRADA.mp4', 'gradas.jpg']
     },
     {
         id: 'jardin',
-        title: 'Borde de Jardín',
-        description: 'La delimitación perfecta para tus áreas verdes, combinando resistencia y ornamentación.',
+        title: 'Borde de Jardín y piscinas',
+        description: 'La delimitación perfecta para tus áreas verdes y de descanso, combinando resistencia y ornamentación.',
         folder: 'assets/src/images/border_de_jardin',
-        files: ['bordepiscina.jpeg', 'bordepiscina1.mp4', 'fuente.jpg', 'jardinera.jpg', 'pasillo.mp4', 'piscina5.jpeg']
+        files: ['bordepiscina.jpeg', 'bordepiscina1.mp4', 'fuente.jpg', 'jardinera.jpg', 'pasillo.mp4', 'PISCINA.jpeg', 'piscina5.jpeg', 'piscina6.mp4', 'piscina7.mp4', 'PISINA.jpeg']
     },
     {
         id: 'rampla',
         title: 'Rampla de Entrada',
         description: 'Accesos funcionales y estéticamente superiores, diseñados para soportar el tránsito con estilo.',
         folder: 'assets/src/images/rampla_de_entrada',
-        files: []
+        files: ['rampla.mp4', 'rampla2.mp4']
     },
     {
         id: 'anden',
@@ -39,7 +39,7 @@ const categories = [
         title: 'Cocina',
         description: 'Mesones y acabados que resisten el tiempo y el uso, brindando la sofisticación que tu hogar merece.',
         folder: 'assets/src/images/cocina',
-        files: ['meson cocina.jpg']
+        files: ['COCINA.mp4', 'COCINA2.jpeg', 'COCINA3.mp4', 'meson cocina.jpg', 'COCINA4.mp4']
     }
 ];
 
@@ -59,15 +59,22 @@ document.addEventListener('DOMContentLoaded', () => {
             <h2 class="category-title">${cat.title}</h2>
             <p class="category-desc">${cat.description}</p>
             <div class="carousel-container">
-                <div class="carousel-track" id="track-${cat.id}">
-                    <!-- Las imágenes se cargarán aquí -->
+                <button class="carousel-btn prev-btn" id="prev-${cat.id}"><i class="fas fa-chevron-left"></i></button>
+                <div class="carousel-wrapper">
+                    <div class="carousel-track" id="track-${cat.id}">
+                        <!-- Las imágenes se cargarán aquí -->
+                    </div>
                 </div>
+                <button class="carousel-btn next-btn" id="next-${cat.id}"><i class="fas fa-chevron-right"></i></button>
             </div>
         `;
 
         container.appendChild(section);
 
         const track = document.getElementById(`track-${cat.id}`);
+        const wrapper = track.parentElement;
+        const prevBtn = document.getElementById(`prev-${cat.id}`);
+        const nextBtn = document.getElementById(`next-${cat.id}`);
 
         // Cargar los archivos especificados en el array 'files'
         cat.files.forEach(fileName => {
@@ -124,20 +131,47 @@ document.addEventListener('DOMContentLoaded', () => {
             track.appendChild(item);
         });
 
-        // Animación de desplazamiento suave si hay suficientes elementos
-        if (cat.files.length > 2) {
-            let scrollAmount = 0;
-            const animate = () => {
-                scrollAmount -= 0.5;
-                if (Math.abs(scrollAmount) >= track.scrollWidth / 2) {
-                    scrollAmount = 0;
-                }
-                track.style.transform = `translateX(${scrollAmount}px)`;
-                requestAnimationFrame(animate);
-            };
-            // Solo activar si hay contenido para desplazar
-            setTimeout(animate, 1000);
-        }
+        // --- Lógica de Desplazamiento Mejorada ---
+
+        const scrollStep = 400; // Un poco más grande para navegar mejor
+
+        nextBtn.addEventListener('click', () => {
+            wrapper.scrollBy({ left: scrollStep, behavior: 'smooth' });
+        });
+
+        prevBtn.addEventListener('click', () => {
+            wrapper.scrollBy({ left: -scrollStep, behavior: 'smooth' });
+        });
+
+        // Soporte para arrastrar con el mouse (Desktop)
+        let isDown = false;
+        let startX;
+        let scrollLeftPos;
+
+        wrapper.addEventListener('mousedown', (e) => {
+            isDown = true;
+            wrapper.style.scrollBehavior = 'auto'; // Deshabilitar suave para el arrastre
+            startX = e.pageX - wrapper.offsetLeft;
+            scrollLeftPos = wrapper.scrollLeft;
+        });
+
+        wrapper.addEventListener('mouseleave', () => {
+            isDown = false;
+            wrapper.style.scrollBehavior = 'smooth';
+        });
+
+        wrapper.addEventListener('mouseup', () => {
+            isDown = false;
+            wrapper.style.scrollBehavior = 'smooth';
+        });
+
+        wrapper.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - wrapper.offsetLeft;
+            const walk = (x - startX) * 1.5; // Ajuste de sensibilidad
+            wrapper.scrollLeft = scrollLeftPos - walk;
+        });
     });
 
     // Cerrar el modal
